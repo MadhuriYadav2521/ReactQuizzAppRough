@@ -76,27 +76,38 @@ const Quiz = () => {
   console.log("filter data", filteredQuizData);
 
   const handleNextQuestion = () => {
-    if (selectedAnswers[currentQuestion]) {
-      setError(false);
+  if (selectedAnswers[currentQuestion]) {
+    setError(false);
 
-      if (selectedAnswers[currentQuestion] === correctAnswers[currentQuestion]) {
-        setScore((prevScore) => prevScore + 1);
-      }
-
-      if (currentQuestion < filteredQuizData.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      } else {
-
-        const newResult = { score: `${score}/${filteredQuizData.length}`, category: category };
-        currentUser.userResults.push(newResult);
-        localStorage.setItem("Users", JSON.stringify(currentUser));
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        setShowResult(true);
-      }
-    } else {
-      setError(true);
+    if (selectedAnswers[currentQuestion] === correctAnswers[currentQuestion]) {
+      setScore((prevScore) => prevScore + 1);
     }
+
+    if (currentQuestion < filteredQuizData.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      const newResult = { score: `${score}/${filteredQuizData.length}`, category: category };
+
+      // Ensure currentUser.userResults is an array
+      currentUser.userResults = Array.isArray(currentUser.userResults)
+        ? [...currentUser.userResults, newResult]
+        : [newResult];
+
+      // Update localStorage for both "Users" and "currentUser"
+      const updatedUsers = JSON.parse(localStorage.getItem("Users"));
+      const updatedCurrentUser = updatedUsers.find(user => user.userName === currentUser.userName);
+      updatedCurrentUser.userResults = currentUser.userResults;
+
+      localStorage.setItem("Users", JSON.stringify(updatedUsers));
+      localStorage.setItem("currentUser", JSON.stringify(updatedCurrentUser));
+      
+      setShowResult(true);
+    }
+  } else {
+    setError(true);
   }
+};
+
 
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
